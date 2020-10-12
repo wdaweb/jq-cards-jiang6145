@@ -17,21 +17,28 @@
         justify-content: center;
         align-items: center;
         background-color: rgb(60, 60, 60);
+        font-family: '微軟正黑體';
       }
       #game {
         width: 1000px;
         perspective: 600px;
         perspective-origin: center center;
         font-size: 0;
+        display: none;
       }
+
+      /*
+      因為 CSS 的 preserve-3d 元素設定透明度會造成 3D 效果出問題
+      所以在外面多包一層來控制透明度, 3D 元素放置在裡面
+      */
       .card-wrap {
         display: inline-block;
         width: 100px;
         height: 150px;
         margin: 5px;
         position: relative;
+        cursor: pointer;
       }
-
       .card-wrap > .card {
         position: absolute;
         width: 100%;
@@ -57,9 +64,37 @@
         background-image: url('./images/Blue_back.jpg');
         transform: rotateY(180deg);
       }
+
+      /* 按鈕 */
+      .btn {
+        padding: 3px 15px;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        background-color: transparent;
+        font-weight: 700;
+        border-radius: 10px;
+        background-color: rgb(214, 73, 51);
+        color: rgb(43, 48, 58);
+        transition: 0.3s;
+      }
+      .btn:hover {
+        color: rgb(214, 73, 51);
+        background-color: transparent;
+        transform: translateY(-10px);
+        text-shadow: 0 10px 3px rgba(0, 0, 0, 0.5);
+      }
+      .btn:active {
+        transform: translateY(-5px);
+        text-shadow: 0 5px 6px rgba(0, 0, 0, 0.5);
+      }
+      .btn-start {
+        font-size: 2.5rem;
+      }
     </style>
   </head>
   <body>
+    <input type="button" value="開始遊戲" class="btn btn-start" />
     <div id="game">
       <!-- <div class="card-wrap">
         <div class="card">
@@ -71,11 +106,16 @@
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
+      const btnStart = $('.btn-start');
       const game = $('#game');
       const totalCards = 26;
       const colors = ['C', 'D', 'H', 'S'];
-      for (let i = 0; i < totalCards; i++) {
-        game.append(`
+      let isInGame = false;
+
+      // 創建鋪克牌
+      function createCards() {
+        for (let i = 0; i < totalCards; i++) {
+          game.append(`
       <div class="card-wrap">
         <div class="card">
           <div class="front"></div>
@@ -84,18 +124,29 @@
       </div>
         `);
 
-        const num = (i % (totalCards / 2)) + 1; // i % (totalCards / 2) => 0~12 循環 + 1 => 1~13循環
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        $('.front').eq(i).css('background-image', `url('./images/${num}${color}.jpg')`);
-        $('.card-wrap').eq(i).attr('data-num', num);
+          const num = (i % (totalCards / 2)) + 1; // i % (totalCards / 2) => 0~12 循環 + 1 => 1~13循環
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          $('.front').eq(i).css('background-image', `url('./images/${num}${color}.jpg')`);
+          $('.card-wrap').eq(i).attr('data-num', num);
 
-        // 將 0~25 隨機的 .card 加入在 .card[i] 的後面, 以實現隨機分配位置
-        $('.card-wrap')
-          .eq(Math.floor(Math.random() * totalCards))
-          .insertAfter($('.card-wrap').eq(i));
+          // 將 0~25 隨機的 .card 加入在 .card[i] 的後面, 以實現隨機分配位置
+          $('.card-wrap')
+            .eq(Math.floor(Math.random() * totalCards))
+            .insertAfter($('.card-wrap').eq(i));
+        }
       }
 
+      // 遊戲開始按鈕
+      btnStart.on('click', function () {
+        isInGame = true;
+        btnStart.hide();
+        game.fadeIn(1000);
+        createCards();
+      });
+
+      // 遊戲中翻牌判斷
       game.on('click', '.card-wrap', function () {
+        if (!isInGame) return;
         if ($('.open').length < 2) {
           $(this).addClass('open');
         }
