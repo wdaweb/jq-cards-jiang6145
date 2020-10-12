@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgb(60, 60, 60);
+      }
+      #game {
+        width: 1000px;
+        perspective: 600px;
+        perspective-origin: center center;
+        font-size: 0;
+      }
+      .card-wrap {
+        display: inline-block;
+        width: 100px;
+        height: 150px;
+        margin: 5px;
+        position: relative;
+      }
+
+      .card-wrap > .card {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transform: rotateY(180deg);
+        transition: 0.5s;
+      }
+      .card-wrap.open > .card {
+        transform: rotateY(0deg);
+      }
+      .front,
+      .back {
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        backface-visibility: hidden;
+        position: absolute;
+      }
+      .back {
+        background-image: url('./images/Blue_back.jpg');
+        transform: rotateY(180deg);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game">
+      <!-- <div class="card-wrap">
+        <div class="card">
+          <div class="front"></div>
+          <div class="back"></div>
+        </div>
+      </div> -->
+    </div>
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      const game = $('#game');
+      const totalCards = 26;
+      const colors = ['C', 'D', 'H', 'S'];
+      for (let i = 0; i < totalCards; i++) {
+        game.append(`
+      <div class="card-wrap">
+        <div class="card">
+          <div class="front"></div>
+          <div class="back"></div>
+        </div>
+      </div>
+        `);
+
+        const num = (i % (totalCards / 2)) + 1; // i % (totalCards / 2) => 0~12 循環 + 1 => 1~13循環
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        $('.front').eq(i).css('background-image', `url('./images/${num}${color}.jpg')`);
+        $('.card-wrap').eq(i).attr('data-num', num);
+
+        // 將 0~25 隨機的 .card 加入在 .card[i] 的後面, 以實現隨機分配位置
+        $('.card-wrap')
+          .eq(Math.floor(Math.random() * totalCards))
+          .insertAfter($('.card-wrap').eq(i));
+      }
+
+      game.on('click', '.card-wrap', function () {
+        if ($('.open').length < 2) {
+          $(this).addClass('open');
+        }
+
+        if ($('.open').length === 2) {
+          if ($('.open').eq(0).attr('data-num') == $('.open').eq(1).attr('data-num')) {
+            $('.open').fadeTo(1000, 0).addClass('clear');
+          }
+          setTimeout(() => {
+            $('.open').removeClass('open');
+          }, 1000);
+        }
+
+        if ($('.clear').length == totalCards) {
+          setTimeout(() => {
+            alert('結束');
+          }, 1000);
+        }
+      });
+    </script>
+  </body>
+</html>
