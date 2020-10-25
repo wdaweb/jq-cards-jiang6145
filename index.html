@@ -137,5 +137,89 @@
         </div>
       </div> -->
     </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      const $game = $('#game');
+      const $btnsWrap = $('#btns-wrap');
+      const $btnStart = $('.btn-start');
+      const $roundText = $('.round-text');
+      let wordCards = [];
+      let isInGame = false;
+      let isPairing = false;
+      let isLastRound = false;
+
+      function addCardsType(type) {
+        if (type === 'Animal') {
+          wordCards = [
+            'alligator',
+            'bee',
+            'cat',
+            'dog',
+            'elephant',
+            'fox',
+            'giraffe',
+            'hippo',
+            'iguana',
+            'jellyfish',
+            'kangaroo',
+            'lion',
+            'monkey',
+            'nightingale',
+            'owl',
+            'penguin',
+            'quail',
+            'raccoon',
+            'seal',
+            'turtle',
+            'unicorn',
+            'vulture',
+            'whale',
+            'x-ray',
+            'yak',
+            'zebra',
+          ];
+          return;
+        }
+      }
+
+      function createCards() {
+        for (let i = 0; i < wordCards.length; i++) {
+          $roundText.text(isLastRound ? 'N ~ Z' : 'A ~ M');
+          $game.append(`
+          <div class="card-wrap">
+            <div class="card">
+              <div class="front">
+              </div>
+              <div class="back"></div>
+            </div>
+          </div>
+        `);
+          const number = isLastRound ? (i % (wordCards.length / 2)) + wordCards.length / 2 : i % (wordCards.length / 2); // 13~25 : 0~12
+          const word = wordCards[number];
+          const addFrontContent =
+            i === number
+              ? $('.front').eq(i).css('background-image', `url('./images/${word}.jpg')`)
+              : $('.front').eq(i).html('<p class="text"></p>').children('.text').text(word);
+
+          $('.card-wrap').eq(i).attr('data-word', word);
+        }
+      }
+
+      function randomSort() {
+        $('.card-wrap').each(function (index) {
+          $(this).insertAfter($('.card-wrap').eq(Math.floor(Math.random() * wordCards.length)));
+        });
+      }
+
+      $btnStart.on('click', function () {
+        isInGame = true;
+        addCardsType($(this).val());
+        createCards();
+        randomSort();
+        $btnsWrap.hide();
+        $game.fadeIn();
+      });
+    </script>
   </body>
 </html>
