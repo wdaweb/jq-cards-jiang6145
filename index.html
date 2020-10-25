@@ -74,7 +74,7 @@
       }
       .card {
         transform-style: preserve-3d;
-        transform: rotateY(180deg);
+        /* transform: rotateY(180deg); */
         transition: 0.8s;
       }
       .card-wrap.open > .card {
@@ -212,6 +212,16 @@
         });
       }
 
+      function gameEnd() {
+        isInGame = false;
+        isLastRound = false;
+        $game.html('');
+        $game.fadeOut();
+        $btnsWrap.fadeIn();
+        wordCards.length = 0;
+        $roundText.text('');
+      }
+
       $btnStart.on('click', function () {
         isInGame = true;
         addCardsType($(this).val());
@@ -219,6 +229,43 @@
         randomSort();
         $btnsWrap.hide();
         $game.fadeIn();
+      });
+
+      $game.on('click', '.card-wrap', function () {
+        if (!isInGame || isPairing || $(this).hasClass('clear')) return;
+        if ($('.open').length < 2) $(this).addClass('open');
+
+        const openCards = $('.open');
+        if (openCards.length !== 2) return;
+        if (openCards.eq(0).attr('data-word') === openCards.eq(1).attr('data-word')) {
+          isPairing = true;
+
+          const wordAudio = new Audio(`./audio/${openCards.eq(0).attr('data-word')}.mp3`);
+          wordAudio.play();
+
+          openCards.addClass('clear').fadeTo(1000, 0, function () {
+            isPairing = false;
+          });
+        }
+
+        setTimeout(() => {
+          openCards.removeClass('open');
+        }, 1000);
+
+        if ($('.clear').length !== $('.card-wrap').length) return;
+        setTimeout(() => {
+          const goodAudio = new Audio(`./audio/good-job.mp3`);
+          goodAudio.play();
+
+          if (!isLastRound) {
+            isLastRound = true;
+            $game.html('');
+            createCards();
+            randomSort();
+          } else {
+            gameEnd();
+          }
+        }, 1500);
       });
     </script>
   </body>
