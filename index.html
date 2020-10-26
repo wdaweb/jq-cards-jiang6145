@@ -30,30 +30,31 @@
         font-size: 50px;
       }
 
-      #btns-wrap {
+      .btns-wrap {
         display: flex;
         flex-direction: column;
         align-items: center;
       }
       .btn-start {
-        width: 223px;
-        height: 51px;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
         cursor: pointer;
         border: none;
         outline: none;
-        background: url('./images/btn-start.png') no-repeat center / contain;
+        border-radius: 30px;
+        background-color: rgb(0, 60, 255);
+        box-shadow: 0 8px 1px rgb(0, 37, 160);
+        padding: 5px 30px;
         letter-spacing: 3px;
         font-family: 'Patrick Hand', cursive;
         font-size: 30px;
         font-weight: 900;
         color: #fff;
       }
-      #btns-wrap > .text,
+      .btns-wrap > .text,
       .round-text {
         letter-spacing: 3px;
         font-size: 36px;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
       }
 
       #game {
@@ -123,9 +124,9 @@
   </head>
   <body>
     <h1 class="title">Word memory flop game</h1>
-    <div id="btns-wrap">
+    <div class="btns-wrap">
       <h3 class="text">Select word type</h3>
-      <input type="button" value="Fruit" class="btn-start" />
+      <input type="button" value="Fruit&Vegetables" class="btn-start" />
       <input type="button" value="Animal" class="btn-start" />
     </div>
     <h3 class="round-text"></h3>
@@ -141,13 +142,14 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
       const $game = $('#game');
-      const $btnsWrap = $('#btns-wrap');
+      const $btnsWrap = $('.btns-wrap');
       const $btnStart = $('.btn-start');
       const $roundText = $('.round-text');
       let wordCards = [];
+      let cardTotal = 0;
       let isInGame = false;
       let isPairing = false;
-      let isLastRound = false;
+      let isNtoZ = false;
 
       function addCardsType(type) {
         if (type === 'Animal') {
@@ -181,11 +183,42 @@
           ];
           return;
         }
+        if (type === 'Fruit&Vegetables') {
+          wordCards = [
+            'apple',
+            'broccoli',
+            'cabbage',
+            'dewberry',
+            'eggplant',
+            'fig',
+            'grapefruit',
+            'huckleberry',
+            'iceberg lettuce',
+            'jalapeno',
+            'kiwi fruit',
+            'lime',
+            'melon',
+            'nut',
+            'orange',
+            'pear',
+            'quetsch',
+            'raspberry',
+            'salad',
+            'tomato',
+            'ugli fruit',
+            'vanilla',
+            'watermelon',
+            'ximenia',
+            'yam',
+            'zucchini',
+          ];
+          return;
+        }
       }
 
       function createCards() {
-        for (let i = 0; i < wordCards.length; i++) {
-          $roundText.text(isLastRound ? 'N ~ Z' : 'A ~ M');
+        for (let i = 0; i < cardTotal; i++) {
+          $roundText.text(isNtoZ ? 'N ~ Z' : 'A ~ M');
           $game.append(`
           <div class="card-wrap">
             <div class="card">
@@ -195,7 +228,7 @@
             </div>
           </div>
         `);
-          const number = isLastRound ? (i % (wordCards.length / 2)) + wordCards.length / 2 : i % (wordCards.length / 2); // 13~25 : 0~12
+          const number = isNtoZ ? (i % (cardTotal / 2)) + cardTotal / 2 : i % (cardTotal / 2); // 13~25 : 0~12
           const word = wordCards[number];
           const addFrontContent =
             i === number
@@ -208,23 +241,25 @@
 
       function randomSort() {
         $('.card-wrap').each(function (index) {
-          $(this).insertAfter($('.card-wrap').eq(Math.floor(Math.random() * wordCards.length)));
+          $(this).insertAfter($('.card-wrap').eq(Math.floor(Math.random() * cardTotal)));
         });
       }
 
       function gameEnd() {
         isInGame = false;
-        isLastRound = false;
-        $game.html('');
-        $game.fadeOut();
-        $btnsWrap.fadeIn();
+        isNtoZ = false;
         wordCards.length = 0;
+        cardTotal = 0;
+        $game.fadeOut();
+        $game.html('');
+        $btnsWrap.fadeIn();
         $roundText.text('');
       }
 
       $btnStart.on('click', function () {
         isInGame = true;
         addCardsType($(this).val());
+        cardTotal = wordCards.length;
         createCards();
         randomSort();
         $btnsWrap.hide();
@@ -238,11 +273,10 @@
         const openCards = $('.open');
         if (openCards.length !== 2) return;
         if (openCards.eq(0).attr('data-word') === openCards.eq(1).attr('data-word')) {
-          isPairing = true;
-
           const wordAudio = new Audio(`./audio/${openCards.eq(0).attr('data-word')}.mp3`);
           wordAudio.play();
 
+          isPairing = true;
           openCards.addClass('clear').fadeTo(1000, 0, function () {
             isPairing = false;
           });
@@ -254,11 +288,11 @@
 
         if ($('.clear').length !== $('.card-wrap').length) return;
         setTimeout(() => {
-          const goodAudio = new Audio(`./audio/good-job.mp3`);
-          goodAudio.play();
+          const goodJobAudio = new Audio(`./audio/good-job.mp3`);
+          goodJobAudio.play();
 
-          if (!isLastRound) {
-            isLastRound = true;
+          if (!isNtoZ) {
+            isNtoZ = true;
             $game.html('');
             createCards();
             randomSort();
